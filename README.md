@@ -5,7 +5,7 @@
 A modern, responsive, and mobile-friendly bulk image cropping and grid slicing tool styled with **Tailwind CSS**.
 
 ## Try it online!
-[Online bulk image cropper](https://www.catalog.guru/raw/image-cropping-tool.html)
+[Online bulk image cropper](https://cropperakdniau.web.app/)
 
 ## What is this?
 This is an in-browser HTML5 mass image cropping tool.
