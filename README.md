@@ -1,3 +1,9 @@
+# AI ONLY UPGRADE
+
+# Bulk Image Cropper for AMINATORS (Tailwind CSS Edition)
+
+A modern, responsive, and mobile-friendly bulk image cropping and grid slicing tool styled with **Tailwind CSS**.
+
 ## Try it online!
 [Online bulk image cropper](https://www.catalog.guru/raw/image-cropping-tool.html)
 
@@ -18,6 +24,6 @@ https://github.com/danfickle/bulk-image-cropper
 
 ## Dependencies
 + The main work of customizing the cropping masks and cropping/resizing images is done by the excellent [cropper.js](https://github.com/fengyuanchen/cropperjs).
-+ The UI is styled with [UI-kit](https://getuikit.com/).
++ The UI is styled with [Tailwind CSS](https://tailwindcss.com/) latest CDN.
 + UI functionality is provided by [Vue.js version 2](https://vuejs.org/).
 + Additionally jQuery is used.
