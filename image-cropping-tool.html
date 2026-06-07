@@ -145,6 +145,8 @@
                         horizontalOffset: 0,
                         verticalOffset: 0,
                         isDraggingSlider: false,
+                        dragModeMove: false,
+                        nudgeStep: 2,
                         imageIndex: -1,
                         fileQueue: [],
                         cropWidth: 0,
@@ -798,6 +800,7 @@
                             img.onload = function () {
                                 cropper = new Cropper(img, {
                                     viewMode: 2,
+                                    dragMode: cropapp.dragModeMove ? 'move' : 'crop',
                                     aspectRatio: (cropapp.lockAspectRatio && cropapp.isValidAspectRatio()) ? (cropapp.aspectRatioWidth / cropapp.aspectRatioHeight) : NaN,
                                     data: imageData,
                                     crop: function (e) {
@@ -930,6 +933,11 @@
                                 this.verticalOffset = Math.floor(newCanvasData.top);
                                 this.sliderMinY = Math.floor(newCanvasData.top - newCanvasData.height);
                                 this.sliderMaxY = Math.floor(newCanvasData.top + newCanvasData.height);
+                            }
+                        },
+                        toggleDragMode: function () {
+                            if (cropper) {
+                                cropper.setDragMode(this.dragModeMove ? 'move' : 'crop');
                             }
                         }
                     },
@@ -1162,6 +1170,15 @@
                     Export Crop / Экспорт
                 </button>
 
+                <label v-if="imageIndex !== -1"
+                       class="col-span-2 sm:col-span-1 md:col-span-auto inline-flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold cursor-pointer select-none text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200">
+                    <input type="checkbox"
+                           v-model="dragModeMove"
+                           v-on:change="toggleDragMode"
+                           class="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer"/>
+                    <span>Move image / Двигать изображение</span>
+                </label>
+
                 <div v-if="imageIndex !== -1"
                      class="col-span-2 sm:col-span-2 md:col-span-auto flex-grow flex flex-col justify-center px-4 md:border-l border-slate-200 dark:border-slate-700 min-h-[40px] text-xs md:text-sm text-slate-600 dark:text-slate-400 py-1 md:py-0">
                     <div class="font-bold text-slate-900 dark:text-white truncate max-w-[200px] md:max-w-xs"
@@ -1317,13 +1334,27 @@
             <div v-if="imageIndex !== -1"
                  class="bg-indigo-50/40 dark:bg-indigo-950/10 p-5 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/30">
                 <div>
-                    <label class="block font-bold text-slate-800 dark:text-slate-200 text-sm mb-3">
-                        Move image horizontally / Двигать изображение по горизонтали:
-                    </label>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                        <label class="block font-bold text-slate-800 dark:text-slate-200 text-sm">
+                            Move image horizontally / Двигать изображение по горизонтали:
+                        </label>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-semibold text-slate-500 mr-1">Step / Шаг (px):</span>
+                            <button v-on:click="nudgeStep = 2"
+                                    :class="nudgeStep === 2 ? 'bg-indigo-600 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'"
+                                    class="px-2.5 py-1 rounded-md text-xs font-bold border hover:opacity-90 transition-all duration-150">2</button>
+                            <button v-on:click="nudgeStep = 10"
+                                    :class="nudgeStep === 10 ? 'bg-indigo-600 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'"
+                                    class="px-2.5 py-1 rounded-md text-xs font-bold border hover:opacity-90 transition-all duration-150">10</button>
+                            <button v-on:click="nudgeStep = 30"
+                                    :class="nudgeStep === 30 ? 'bg-indigo-600 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'"
+                                    class="px-2.5 py-1 rounded-md text-xs font-bold border hover:opacity-90 transition-all duration-150">30</button>
+                        </div>
+                    </div>
                     <div class="flex items-center gap-4">
-                        <button v-on:click="nudgeImage('x', -2)"
+                        <button v-on:click="nudgeImage('x', -nudgeStep)"
                                 class="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-950/30 rounded transition-colors"
-                                title="Move left 2px / Сдвинуть влево на 2пкс">
+                                :title="'Move left ' + nudgeStep + 'px / Сдвинуть влево на ' + nudgeStep + 'пкс'">
                             <svg class="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24"
                                  stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -1333,9 +1364,9 @@
                                class="w-full h-2 bg-indigo-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                v-model="horizontalOffset" :min="sliderMin" :max="sliderMax" step="1"
                                v-on:input="slideImage" v-on:change="finishSlide"/>
-                        <button v-on:click="nudgeImage('x', 2)"
+                        <button v-on:click="nudgeImage('x', nudgeStep)"
                                 class="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-950/30 rounded transition-colors"
-                                title="Move right 2px / Сдвинуть вправо на 2пкс">
+                                :title="'Move right ' + nudgeStep + 'px / Сдвинуть вправо на ' + nudgeStep + 'пкс'">
                             <svg class="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24"
                                  stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -1357,13 +1388,27 @@
             <div v-if="imageIndex !== -1"
                  class="bg-indigo-50/40 dark:bg-indigo-950/10 p-5 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/30 space-y-4">
                 <div>
-                    <label class="block font-bold text-slate-800 dark:text-slate-200 text-sm mb-3">
-                        Move image vertically / Двигать изображение по вертикали:
-                    </label>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                        <label class="block font-bold text-slate-800 dark:text-slate-200 text-sm">
+                            Move image vertically / Двигать изображение по вертикали:
+                        </label>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-semibold text-slate-500 mr-1">Step / Шаг (px):</span>
+                            <button v-on:click="nudgeStep = 2"
+                                    :class="nudgeStep === 2 ? 'bg-indigo-600 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'"
+                                    class="px-2.5 py-1 rounded-md text-xs font-bold border hover:opacity-90 transition-all duration-150">2</button>
+                            <button v-on:click="nudgeStep = 10"
+                                    :class="nudgeStep === 10 ? 'bg-indigo-600 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'"
+                                    class="px-2.5 py-1 rounded-md text-xs font-bold border hover:opacity-90 transition-all duration-150">10</button>
+                            <button v-on:click="nudgeStep = 30"
+                                    :class="nudgeStep === 30 ? 'bg-indigo-600 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'"
+                                    class="px-2.5 py-1 rounded-md text-xs font-bold border hover:opacity-90 transition-all duration-150">30</button>
+                        </div>
+                    </div>
                     <div class="flex items-center gap-4">
-                        <button v-on:click="nudgeImage('y', -2)"
+                        <button v-on:click="nudgeImage('y', -nudgeStep)"
                                 class="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-950/30 rounded transition-colors"
-                                title="Move up 2px / Сдвинуть вверх на 2пкс">
+                                :title="'Move up ' + nudgeStep + 'px / Сдвинуть вверх на ' + nudgeStep + 'пкс'">
                             <svg class="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24"
                                  stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
@@ -1373,9 +1418,9 @@
                                class="w-full h-2 bg-indigo-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                v-model="verticalOffset" :min="sliderMinY" :max="sliderMaxY" step="1"
                                v-on:input="slideImage" v-on:change="finishSlide"/>
-                        <button v-on:click="nudgeImage('y', 2)"
+                        <button v-on:click="nudgeImage('y', nudgeStep)"
                                 class="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-950/30 rounded transition-colors"
-                                title="Move down 2px / Сдвинуть вниз на 2пкс">
+                                :title="'Move down ' + nudgeStep + 'px / Сдвинуть вниз на ' + nudgeStep + 'пкс'">
                             <svg class="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24"
                                  stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
